@@ -1,0 +1,10 @@
+---
+title: "data_EDA"
+author: "yz5248"
+date: "2025-10-02"
+output: github_document
+---
+```{r}
+library(p8105.datasets)
+```
+
