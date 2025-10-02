@@ -56,5 +56,47 @@ weather_df |>
   geom_point()
 ```
 
+```{r}
+weather_df |>
+  group_by(name, month)
+```
 
+```{r}
+weather_df |>
+  group_by(name) |>
+  summarize(
+    n = n()
+    )
+```
+
+```{r}
+weather_df |>
+  group_by(name, month) |>
+  summarize(
+    n = n()
+  )
+```
+
+```{r}
+weather_df |>
+  group_by(month) |>
+  summarize(
+    n_obs = n(),
+    n_days = n_distinct(date))
+```
+
+```{r}
+weather_df |>
+  count(name)
+```
+
+```{r}
+weather_df |>
+  group_by(month) |>
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE),
+    median_tmin = median(tmin, na.rm = TRUE),
+    sd_prcp = sd(prcp, na.rm = TRUE)
+  ) |> view()
+```
 
