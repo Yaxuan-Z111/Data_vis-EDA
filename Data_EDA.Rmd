@@ -176,7 +176,136 @@ weather_df |>
   )
 ```
 
-```{r}
 
+###case study
+```{r}
+library(p8105.datasets)
+library(tidyverse)
+library(leaflet)
+library(tibble)
+data(nyc_airbnb) 
 ```
+#brainstorm
+- Pick a neighborhood / borough, investigate price
+- If we have dates, does it affect price
+- what about zip
+- what rental has the highest reviews
+- are there any connection between price and other variables
+- what about prices over time
+- could we look at prices before and after pandemic
+- how else did the pademic after AirBNB in NYC
+- does the name of the rental affectnthe price/rental
+- what does the number of days available have to do with anything else
+
+
+let's look at the price first
+```{r}
+nyc_airbnb |>
+  drop_na(price) |>
+  filter(neighbourhood_group == "Manhattan") |>
+  group_by(neighbourhood_group) |>
+  summarise(
+    mean_price = mean(price),
+    min_price = min(price),
+    max_price = max(price)
+      
+  )
+```
+
+```{r}
+nyc_airbnb |>
+  drop_na(price) |>
+  group_by(room_type, neighbourhood_group) |>
+  summarise(
+    mean_price = mean(price)
+      
+  ) |>
+  pivot_wider(
+    names_from = room_type,
+    values_from = mean_price
+  )
+```
+
+```{r}
+nyc_airbnb |>
+  count(neighbourhood_group,room_type)
+```
+
+make some plot
+```{r}
+nyc_airbnb |>
+  ggplot(aes(x = price)) +
+  geom_histogram() +
+  facet_grid(room_type ~ neighbourhood_group) +
+  scale_x_continuous(limits = c(0,1000))
+```
+
+```{r}
+nyc_airbnb |>
+  filter(neighbourhood_group == "Manhattan",
+         price < 500,
+         room_type == "Entire home/apt") |>
+  mutate(
+    neighbourhood = fct_reorder(neighbourhood, price)
+  ) |>
+  ggplot(aes(x = neighbourhood_group, y = price)) +
+  geom_violin() +
+  theme(axis.text = element_text(angle = 90, hjust = 1, vjust = 0.5))
+```
+
+look at extreme value
+```{r}
+nyc_airbnb |> filter(price > 9000)
+```
+
+```{r}
+nyc_airbnb |> filter(calculated_host_listings_count > 30)
+```
+
+```{r}
+nyc_airbnb |>
+  filter(neighbourhood_group == "Manhattan",
+         price < 500,
+         room_type == "Entire home/apt") |>
+  mutate(
+    neighbourhood = fct_reorder(neighbourhood, price)
+  ) |>
+  ggplot(aes(x = lat, y = long, color = review_scores_location)) +
+  geom_point()
+```
+
+make a better map
+```{r}
+nyc_airbnb |>
+  filter(
+    neighbourhood_group == "Manhattan",
+         price < 500,
+         room_type == "Entire home/apt"
+  ) |>
+  leaflet() |>
+  addTiles()|>
+  addMarkers(~lat, ~long)
+  
+```
+
+```{r}
+pal <- colorNumeric(
+  palette = "viridis",
+  domain = nyc_airbnb$review_scores_location
+)
+nyc_airbnb |>
+  filter(
+    neighbourhood_group == "Manhattan",
+         price < 500,
+         room_type == "Entire home/apt"
+  ) |>
+  leaflet() |>
+  addProviderTiles(providers$CartoDB.Positron)|>
+  addCircleMarkers(
+    ~lat, ~long,
+    color = ~pal(price),
+    radius = 2
+  )
+```
+
 
